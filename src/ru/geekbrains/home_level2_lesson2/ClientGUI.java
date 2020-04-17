@@ -2,8 +2,8 @@ package ru.geekbrains.home_level2_lesson2;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.io.*;
 
 public class ClientGUI extends JFrame implements ActionListener,
         Thread.UncaughtExceptionHandler {
@@ -25,6 +25,16 @@ public class ClientGUI extends JFrame implements ActionListener,
     private final JButton btnSend = new JButton("Send");
 
     private final JList<String> userList = new JList<>();
+
+    private static void writeLogToFile (String s) {
+        try(FileWriter writFile = new FileWriter("ChatLog.txt", false)){
+            writFile.write(s);
+            writFile.flush();
+        }
+        catch(IOException ex){
+            System.out.println(ex.getMessage());
+        }
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -51,7 +61,9 @@ public class ClientGUI extends JFrame implements ActionListener,
         log.setWrapStyleWord(true);
         log.setEditable(false);
         cbAlwaysOnTop.addActionListener(this);
-
+        btnSend.requestFocus();
+        rootPane.setDefaultButton(btnSend);
+        btnSend.addActionListener(this);
         panelTop.add(tfIPAddress);
         panelTop.add(tfPort);
         panelTop.add(cbAlwaysOnTop);
@@ -72,9 +84,13 @@ public class ClientGUI extends JFrame implements ActionListener,
     @Override
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
-        if (src == cbAlwaysOnTop) {
-            setAlwaysOnTop(cbAlwaysOnTop.isSelected());
-        } else {
+        if (src == cbAlwaysOnTop) setAlwaysOnTop(cbAlwaysOnTop.isSelected());
+        if (src == btnSend) {
+            log.append(tfMessage.getText() + '\n');
+            writeLogToFile(log.getText());
+            tfMessage.setText("");
+        }
+         else {
             throw new RuntimeException("Unknown source:" + src);
         }
     }
@@ -89,6 +105,4 @@ public class ClientGUI extends JFrame implements ActionListener,
         JOptionPane.showMessageDialog(this, msg, "Exception", JOptionPane.ERROR_MESSAGE);
         System.exit(1);
     }
-
-
 }
